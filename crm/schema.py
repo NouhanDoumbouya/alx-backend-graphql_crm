@@ -2,6 +2,8 @@ import graphene
 from graphene_django import DjangoObjectType
 from crm.models import Product
 from django.utils import timezone
+from crm.models import Customer, Order
+from django.db.models import Sum
 
 # Define ProductType for GraphQL responses
 class ProductType(DjangoObjectType):
@@ -46,6 +48,22 @@ class Query(graphene.ObjectType):
 
     def resolve_products(root, info):
         return Product.objects.all()
+
+class Query(graphene.ObjectType):
+    total_customers = graphene.Int()
+    total_orders = graphene.Int()
+    total_revenue = graphene.Float()
+
+    hello = graphene.String(default_value="Hello from CRM GraphQL!")
+
+    def resolve_total_customers(root, info):
+        return Customer.objects.count()
+
+    def resolve_total_orders(root, info):
+        return Order.objects.count()
+
+    def resolve_total_revenue(root, info):
+        return Order.objects.aggregate(Sum('total_amount'))['total_amount__sum'] or 0.0
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
