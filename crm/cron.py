@@ -4,15 +4,14 @@ import requests
 def log_crm_heartbeat():
     """
     Logs a heartbeat message every 5 minutes
-    and optionally checks the GraphQL hello endpoint.
+    and verifies GraphQL hello endpoint.
     """
     log_file = "/tmp/crm_heartbeat_log.txt"
     timestamp = datetime.datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
 
-    # Heartbeat message
-    message = f"{timestamp} CRM is alive\n"
+    message = f"{timestamp} CRM is alive"
 
-    # Optional: Verify GraphQL hello field responsiveness
+    # Optional GraphQL hello check
     try:
         response = requests.post(
             "http://localhost:8000/graphql",
@@ -20,12 +19,16 @@ def log_crm_heartbeat():
             timeout=5
         )
         if response.status_code == 200:
-            message = f"{timestamp} CRM is alive (GraphQL OK)\n"
+            data = response.json()
+            if data.get("data", {}).get("hello"):
+                message += " (GraphQL OK)"
+            else:
+                message += " (GraphQL Response Invalid)"
         else:
-            message = f"{timestamp} CRM is alive (GraphQL Unresponsive)\n"
+            message += f" (GraphQL HTTP {response.status_code})"
     except Exception as e:
-        message = f"{timestamp} CRM is alive (GraphQL Error: {e})\n"
+        message += f" (GraphQL Error: {e})"
 
-    # Append message to log file
+    # Write heartbeat log
     with open(log_file, "a") as f:
-        f.write(message)
+        f.write(message + "\n")
