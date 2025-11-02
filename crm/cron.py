@@ -1,6 +1,6 @@
 import datetime
 import requests
-
+# "from gql.transport.requests import RequestsHTTPTransport", "from gql import", "gql", "Client"
 def log_crm_heartbeat():
     """
     Logs a heartbeat message every 5 minutes
@@ -81,4 +81,3 @@ def update_low_stock():
 
     with open(log_file, "a") as f:
         f.write(log_entry + "\n")
-
